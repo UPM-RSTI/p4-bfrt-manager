@@ -18,7 +18,7 @@ has no dependency on TeraFlowSDN and can be used on its own.
 ## Installation
 
 ```bash
-git clone https://github.com/rsti-upm/p4-bfrt-manager.git
+git clone https://github.com/mgaflip/p4-bfrt-manager.git
 cd p4-bfrt-manager
 pip install .
 ```
