@@ -200,6 +200,19 @@ python apply_entries.py --addr 10.0.2.68 insert entries.json
 python apply_entries.py --addr 10.0.2.68 --p4-path ../p4src --p4-name my_prog insert entries.json
 ```
 
+[`tna_counter_entries.json`](examples/tna_counter_entries.json) is written for
+the `tna_counter` example program shipped with the Tofino SDE:
+
+```bash
+python apply_entries.py --addr <switch> insert tna_counter_entries.json
+python dump_entries.py  --addr <switch> forward_exact   # shows $COUNTER_SPEC_PKTS/BYTES
+python apply_entries.py --addr <switch> delete tna_counter_entries.json
+```
+
+Other table, action and field names in the examples (`pipe.Ingress.ipv4_lpm`,
+`Ingress.forward`, `my_prog`...) and in `examples/entries.json` are
+placeholders: run `show_tables.py` first to see the tables of the program
+loaded on your switch, then `show_tables.py --table <name>` for their fields.
 [`setup_switch.py`](examples/setup_switch.py) is a template for a full
 configuration script.
 

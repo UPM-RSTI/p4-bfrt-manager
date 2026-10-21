@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "p4-bfrt-manager"
-version = "0.1.0"
+version = "0.1.1"
 description = "Remote configuration of Intel Tofino switches through BF Runtime (BFRT) gRPC, using a simple JSON model for table entries"
 readme = "README.md"
 license = { text = "Apache-2.0" }
@@ -23,7 +23,7 @@ dependencies = [
     "protobuf>=4.25",
     "googleapis-common-protos>=1.56",
     "six",
-    "tabulate",
+    "tabulate>=0.9",
 ]
 
 [project.optional-dependencies]

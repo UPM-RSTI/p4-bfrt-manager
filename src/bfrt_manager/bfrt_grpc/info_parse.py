@@ -869,6 +869,9 @@ class BfRtInfoParser:
         data_info = _DataInfo(data_json["name"], data_json["id"],
                 field_type, field_size, data_json["repeated"],
                 mandatory, read_only, annotations, container_dict)
+        # Keep the allowed values of string/enum fields (upstream stores the type here)
+        data_type = data_json.get("type") or {}
+        data_info.choices = list(data_type.get("choices", []))
         return data_info
 
     @staticmethod

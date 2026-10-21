@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.1.1
+
+### Changed
+- Unknown table names raise a clear `BFRTException` suggesting similar names
+  (or how to list them) instead of a bare `KeyError` message.
+- `print_table_entries_spec()` shows the full table name when given a short
+  one, wraps long columns, and displays native annotations as `name=value`.
+- Requires `tabulate>=0.9`.
+
+### Fixed
+- The `choices` column/field repeated the field type; it now lists the allowed
+  values of string/enum fields such as `$SPEED` or `$FEC` (fix in the vendored
+  `info_parse.py`).
+
+### Documentation
+- Installation in a virtual environment (needed on Ubuntu 24.04+ / Debian 12+).
+- Example names are flagged as placeholders; new
+  `examples/tna_counter_entries.json` for the SDE `tna_counter` program.
+
 ## 0.1.0
 
 First standalone release. Changes are relative to the version used as the

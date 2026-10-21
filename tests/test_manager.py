@@ -134,8 +134,24 @@ def test_filtered_read(manager):
 
 
 def test_print_spec(manager, capsys):
-    manager.print_table_entries_spec(LPM)
+    manager.print_table_entries_spec("ipv4_lpm")
     out = capsys.readouterr().out
+    assert f"table-name: '{LPM}'" in out
     assert "Ingress.forward" in out and "dst_mac" in out
+    assert "bytes, " not in out  # choices column no longer repeats the type
     manager.print_table_entries_spec("$PORT")
-    assert "$SPEED" in capsys.readouterr().out
+    out = capsys.readouterr().out
+    assert "$SPEED" in out and "BF_SPEED_25G" in out
+
+
+def test_choices(manager, client):
+    field = client.bfrt_get_action_data_field(manager.get_table("$PORT"), None, "$SPEED")
+    assert field["choices"] == "BF_SPEED_10G, BF_SPEED_25G, BF_SPEED_100G"
+    field = client.bfrt_get_action_data_field(manager.get_table(LPM), "Ingress.forward", "port")
+    assert field["choices"] == ""
+
+
+def test_unknown_table_suggests(manager):
+    with pytest.raises(BFRTException) as exc:
+        manager.get_table("ipv4_lmp")
+    assert "not found" in str(exc.value) and "pipe.Ingress.ipv4_lpm" in str(exc.value)

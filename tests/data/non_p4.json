@@ -31,7 +31,12 @@
       "read_only": false,
       "annotations": [],
       "type": {
-       "type": "string"
+       "type": "string",
+       "choices": [
+        "BF_SPEED_10G",
+        "BF_SPEED_25G",
+        "BF_SPEED_100G"
+       ]
       }
      }
     },

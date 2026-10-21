@@ -610,14 +610,15 @@ class BFRTManager:
 
         def print_rows(rows):
             if rows:
-                print(tabulate([list(r.values()) for r in rows], headers=list(rows[0].keys()),
-                               stralign="right", tablefmt="pretty"))
+                headers = list(rows[0].keys())
+                widths = [40 if h in ("choices", "annotations") else None for h in headers]
+                print(tabulate([list(r.values()) for r in rows], headers=headers,
+                               stralign="right", tablefmt="pretty", maxcolwidths=widths))
             else:
                 print("  (none)")
 
-        if not isinstance(table_name, str):
-            table_name = self.get_table_name(table_name)
-        table = self.get_table(table_name)
+        table = self._resolve_table(table_name)
+        table_name = table.info.name_get()
 
         print(f"table-name: '{table_name}'")
         print_rows([self.local_client.bfrt_get_key_field(table, kf)

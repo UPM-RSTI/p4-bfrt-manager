@@ -19,6 +19,7 @@ It converts between plain Python dictionaries (match fields, action
 parameters) and the KeyTuple/DataTuple objects used by ``bfrt_grpc``.
 """
 
+import difflib
 import logging
 from functools import wraps
 
@@ -136,10 +137,33 @@ def split_annotations(ann):
     return [a.strip() for a in ann if a and a.strip()]
 
 
+def _format_annotations(annotations):
+    """All annotations of a field for display: client ones as "ipv4",
+    native bf-rt.json ones as "name=value"."""
+    return ", ".join(a.value if a.name == CLIENT_ANNOTATION else f"{a.name}={a.value}"
+                     for a in annotations)
+
+
 def _client_annotations(annotations):
     """Return the client annotations (ipv4, mac, ...) as a comma-separated
     string, ignoring the native annotations coming from bf-rt.json."""
     return ",".join(a.value for a in annotations if a.name == CLIENT_ANNOTATION)
+
+
+def _suggest(name, candidates, limit=5):
+    """' Did you mean: ...?' hint for a mistyped table name, or ''."""
+    wanted = name.lower()
+
+    def score(cand):
+        parts = cand.lower().split(".")
+        suffixes = [".".join(parts[i:]) for i in range(len(parts))]
+        if any(wanted in s for s in suffixes):
+            return 1.0
+        return max(difflib.SequenceMatcher(None, wanted, s).ratio() for s in suffixes)
+
+    ranked = sorted(((score(c), c) for c in candidates), key=lambda x: -x[0])
+    matches = [c for sc, c in ranked if sc >= 0.6][:limit]
+    return f" Did you mean: {', '.join(matches)}?" if matches else ""
 
 
 def table_entry_to_json(table_name, match_map, action_name=None, action_params=None,
@@ -229,10 +253,18 @@ class BFRTRuntimeClient:
 
         return self.bfrt_info
 
-    @parse_bfrt_error
     def bfrt_get_table(self, table_name):
-        """Return the BFRT table object for ``table_name``."""
-        return self.bfrt_info.table_get(table_name)
+        """Return the BFRT table object for ``table_name`` (full name or unique suffix)."""
+        if self.bfrt_info is None:
+            raise BFRTException("Not bound to a P4 program: call start() first")
+        try:
+            return self.bfrt_info.table_get(table_name)
+        except KeyError:
+            pass
+        hint = _suggest(table_name, self.all_tables) or \
+            " Use get_all_tables() (or examples/show_tables.py) to list them."
+        raise BFRTException(
+            f"Table '{table_name}' not found in program '{self.p4_name}'.{hint}")
 
     def bfrt_get_tables(self):
         """Names of the tables that support entries (EntryScope attribute)."""
@@ -326,8 +358,7 @@ class BFRTRuntimeClient:
             "size": info.key_field_size_get(key_field_name),
             "repeated": info.key_field_repeated_get(key_field_name),
             "mandatory": info.key_field_mandatory_get(key_field_name),
-            "annotations": ",".join(
-                a.value for a in info.key_field_annotations_get(key_field_name)),
+            "annotations": _format_annotations(info.key_field_annotations_get(key_field_name)),
         }
 
     @parse_bfrt_error
@@ -361,9 +392,9 @@ class BFRTRuntimeClient:
             "repeated": info.data_field_repeated_get(data_field_name, action_name),
             "mandatory": info.data_field_mandatory_get(data_field_name, action_name),
             "read_only": info.data_field_read_only_get(data_field_name, action_name),
-            "choices": info.data_field_allowed_choices_get(data_field_name, action_name),
-            "annotations": ",".join(
-                a.value for a in info.data_field_annotations_get(data_field_name, action_name)),
+            "choices": ", ".join(info.data_field_allowed_choices_get(data_field_name, action_name)),
+            "annotations": _format_annotations(
+                info.data_field_annotations_get(data_field_name, action_name)),
         }
 
     @parse_bfrt_error

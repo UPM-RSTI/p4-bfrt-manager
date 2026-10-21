@@ -1,0 +1,300 @@
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 3c28e88..75766ee 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -1,5 +1,24 @@
+ # Changelog
+ 
++## 0.1.1
++
++### Changed
++- Unknown table names raise a clear `BFRTException` suggesting similar names
++  (or how to list them) instead of a bare `KeyError` message.
++- `print_table_entries_spec()` shows the full table name when given a short
++  one, wraps long columns, and displays native annotations as `name=value`.
++- Requires `tabulate>=0.9`.
++
++### Fixed
++- The `choices` column/field repeated the field type; it now lists the allowed
++  values of string/enum fields such as `$SPEED` or `$FEC` (fix in the vendored
++  `info_parse.py`).
++
++### Documentation
++- Installation in a virtual environment (needed on Ubuntu 24.04+ / Debian 12+).
++- Example names are flagged as placeholders; new
++  `examples/tna_counter_entries.json` for the SDE `tna_counter` program.
++
+ ## 0.1.0
+ 
+ First standalone release. Changes are relative to the version used as the
+diff --git a/README.md b/README.md
+index 9506834..aac325a 100644
+--- a/README.md
++++ b/README.md
+@@ -200,6 +200,19 @@ python apply_entries.py --addr 10.0.2.68 insert entries.json
+ python apply_entries.py --addr 10.0.2.68 --p4-path ../p4src --p4-name my_prog insert entries.json
+ ```
+ 
++[`tna_counter_entries.json`](examples/tna_counter_entries.json) is written for
++the `tna_counter` example program shipped with the Tofino SDE:
++
++```bash
++python apply_entries.py --addr <switch> insert tna_counter_entries.json
++python dump_entries.py  --addr <switch> forward_exact   # shows $COUNTER_SPEC_PKTS/BYTES
++python apply_entries.py --addr <switch> delete tna_counter_entries.json
++```
++
++Other table, action and field names in the examples (`pipe.Ingress.ipv4_lpm`,
++`Ingress.forward`, `my_prog`...) and in `examples/entries.json` are
++placeholders: run `show_tables.py` first to see the tables of the program
++loaded on your switch, then `show_tables.py --table <name>` for their fields.
+ [`setup_switch.py`](examples/setup_switch.py) is a template for a full
+ configuration script.
+ 
+diff --git a/examples/tna_counter_entries.json b/examples/tna_counter_entries.json
+new file mode 100644
+index 0000000..d4f71c6
+--- /dev/null
++++ b/examples/tna_counter_entries.json
+@@ -0,0 +1,15 @@
++[
++  {
++    "table-name": "pipe.SwitchIngress.forward_exact",
++    "match-fields": { "hdr.ethernet.src_addr": "00:00:00:00:00:01" },
++    "match-annotations": { "hdr.ethernet.src_addr": "mac" },
++    "action-name": "SwitchIngress.hit_forward_exact",
++    "action-params": { "port": 4 }
++  },
++  {
++    "table-name": "pipe.SwitchIngress.forward_exact",
++    "match-fields": { "hdr.ethernet.src_addr": "00:00:00:00:00:02" },
++    "match-annotations": { "hdr.ethernet.src_addr": "mac" },
++    "action-name": "SwitchIngress.nop"
++  }
++]
+diff --git a/pyproject.toml b/pyproject.toml
+index c690384..2026c6a 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
+ 
+ [project]
+ name = "p4-bfrt-manager"
+-version = "0.1.0"
++version = "0.1.1"
+ description = "Remote configuration of Intel Tofino switches through BF Runtime (BFRT) gRPC, using a simple JSON model for table entries"
+ readme = "README.md"
+ license = { text = "Apache-2.0" }
+@@ -23,7 +23,7 @@ dependencies = [
+     "protobuf>=4.25",
+     "googleapis-common-protos>=1.56",
+     "six",
+-    "tabulate",
++    "tabulate>=0.9",
+ ]
+ 
+ [project.optional-dependencies]
+diff --git a/src/bfrt_manager/__init__.py b/src/bfrt_manager/__init__.py
+index 5b38840..8fbe9ea 100644
+--- a/src/bfrt_manager/__init__.py
++++ b/src/bfrt_manager/__init__.py
+@@ -24,4 +24,4 @@ __all__ = [
+     "WriteOperation",
+     "find_p4_artifacts",
+ ]
+-__version__ = "0.1.0"
++__version__ = "0.1.1"
+diff --git a/src/bfrt_manager/bfrt_grpc/README.md b/src/bfrt_manager/bfrt_grpc/README.md
+index 27e1047..63791cf 100644
+--- a/src/bfrt_manager/bfrt_grpc/README.md
++++ b/src/bfrt_manager/bfrt_grpc/README.md
+@@ -14,6 +14,8 @@ Intel Corporation, licensed under the Apache License 2.0.
+ 
+ - `client.py`: imports of the generated stubs made relative
+   (`from . import bfruntime_pb2`) so the package can be vendored.
++- `info_parse.py`: `data_field_allowed_choices_get()` returns the allowed values
++  of string/enum fields (e.g. `$SPEED`) instead of the field type.
+ - `client.py`, `info_parse.py`: loggers renamed to `__name__` and no longer
+   add handlers or force a log level at import time.
+ 
+diff --git a/src/bfrt_manager/bfrt_grpc/info_parse.py b/src/bfrt_manager/bfrt_grpc/info_parse.py
+index b829b65..38c4546 100644
+--- a/src/bfrt_manager/bfrt_grpc/info_parse.py
++++ b/src/bfrt_manager/bfrt_grpc/info_parse.py
+@@ -869,6 +869,9 @@ class BfRtInfoParser:
+         data_info = _DataInfo(data_json["name"], data_json["id"],
+                 field_type, field_size, data_json["repeated"],
+                 mandatory, read_only, annotations, container_dict)
++        # Keep the allowed values of string/enum fields (upstream stores the type here)
++        data_type = data_json.get("type") or {}
++        data_info.choices = list(data_type.get("choices", []))
+         return data_info
+ 
+     @staticmethod
+diff --git a/src/bfrt_manager/client.py b/src/bfrt_manager/client.py
+index 9c099cc..6e8453d 100644
+--- a/src/bfrt_manager/client.py
++++ b/src/bfrt_manager/client.py
+@@ -19,6 +19,7 @@ It converts between plain Python dictionaries (match fields, action
+ parameters) and the KeyTuple/DataTuple objects used by ``bfrt_grpc``.
+ """
+ 
++import difflib
+ import logging
+ from functools import wraps
+ 
+@@ -136,12 +137,35 @@ def split_annotations(ann):
+     return [a.strip() for a in ann if a and a.strip()]
+ 
+ 
++def _format_annotations(annotations):
++    """All annotations of a field for display: client ones as "ipv4",
++    native bf-rt.json ones as "name=value"."""
++    return ", ".join(a.value if a.name == CLIENT_ANNOTATION else f"{a.name}={a.value}"
++                     for a in annotations)
++
++
+ def _client_annotations(annotations):
+     """Return the client annotations (ipv4, mac, ...) as a comma-separated
+     string, ignoring the native annotations coming from bf-rt.json."""
+     return ",".join(a.value for a in annotations if a.name == CLIENT_ANNOTATION)
+ 
+ 
++def _suggest(name, candidates, limit=5):
++    """' Did you mean: ...?' hint for a mistyped table name, or ''."""
++    wanted = name.lower()
++
++    def score(cand):
++        parts = cand.lower().split(".")
++        suffixes = [".".join(parts[i:]) for i in range(len(parts))]
++        if any(wanted in s for s in suffixes):
++            return 1.0
++        return max(difflib.SequenceMatcher(None, wanted, s).ratio() for s in suffixes)
++
++    ranked = sorted(((score(c), c) for c in candidates), key=lambda x: -x[0])
++    matches = [c for sc, c in ranked if sc >= 0.6][:limit]
++    return f" Did you mean: {', '.join(matches)}?" if matches else ""
++
++
+ def table_entry_to_json(table_name, match_map, action_name=None, action_params=None,
+                         match_annotations=None, action_annotations=None):
+     """Build the JSON (dict) representation of a table entry."""
+@@ -229,10 +253,18 @@ class BFRTRuntimeClient:
+ 
+         return self.bfrt_info
+ 
+-    @parse_bfrt_error
+     def bfrt_get_table(self, table_name):
+-        """Return the BFRT table object for ``table_name``."""
+-        return self.bfrt_info.table_get(table_name)
++        """Return the BFRT table object for ``table_name`` (full name or unique suffix)."""
++        if self.bfrt_info is None:
++            raise BFRTException("Not bound to a P4 program: call start() first")
++        try:
++            return self.bfrt_info.table_get(table_name)
++        except KeyError:
++            pass
++        hint = _suggest(table_name, self.all_tables) or \
++            " Use get_all_tables() (or examples/show_tables.py) to list them."
++        raise BFRTException(
++            f"Table '{table_name}' not found in program '{self.p4_name}'.{hint}")
+ 
+     def bfrt_get_tables(self):
+         """Names of the tables that support entries (EntryScope attribute)."""
+@@ -326,8 +358,7 @@ class BFRTRuntimeClient:
+             "size": info.key_field_size_get(key_field_name),
+             "repeated": info.key_field_repeated_get(key_field_name),
+             "mandatory": info.key_field_mandatory_get(key_field_name),
+-            "annotations": ",".join(
+-                a.value for a in info.key_field_annotations_get(key_field_name)),
++            "annotations": _format_annotations(info.key_field_annotations_get(key_field_name)),
+         }
+ 
+     @parse_bfrt_error
+@@ -361,9 +392,9 @@ class BFRTRuntimeClient:
+             "repeated": info.data_field_repeated_get(data_field_name, action_name),
+             "mandatory": info.data_field_mandatory_get(data_field_name, action_name),
+             "read_only": info.data_field_read_only_get(data_field_name, action_name),
+-            "choices": info.data_field_allowed_choices_get(data_field_name, action_name),
+-            "annotations": ",".join(
+-                a.value for a in info.data_field_annotations_get(data_field_name, action_name)),
++            "choices": ", ".join(info.data_field_allowed_choices_get(data_field_name, action_name)),
++            "annotations": _format_annotations(
++                info.data_field_annotations_get(data_field_name, action_name)),
+         }
+ 
+     @parse_bfrt_error
+diff --git a/src/bfrt_manager/manager.py b/src/bfrt_manager/manager.py
+index 8a811ad..ccc8bb1 100644
+--- a/src/bfrt_manager/manager.py
++++ b/src/bfrt_manager/manager.py
+@@ -610,14 +610,15 @@ class BFRTManager:
+ 
+         def print_rows(rows):
+             if rows:
+-                print(tabulate([list(r.values()) for r in rows], headers=list(rows[0].keys()),
+-                               stralign="right", tablefmt="pretty"))
++                headers = list(rows[0].keys())
++                widths = [40 if h in ("choices", "annotations") else None for h in headers]
++                print(tabulate([list(r.values()) for r in rows], headers=headers,
++                               stralign="right", tablefmt="pretty", maxcolwidths=widths))
+             else:
+                 print("  (none)")
+ 
+-        if not isinstance(table_name, str):
+-            table_name = self.get_table_name(table_name)
+-        table = self.get_table(table_name)
++        table = self._resolve_table(table_name)
++        table_name = table.info.name_get()
+ 
+         print(f"table-name: '{table_name}'")
+         print_rows([self.local_client.bfrt_get_key_field(table, kf)
+diff --git a/tests/data/non_p4.json b/tests/data/non_p4.json
+index 94e1e7e..1125cad 100644
+--- a/tests/data/non_p4.json
++++ b/tests/data/non_p4.json
+@@ -31,7 +31,12 @@
+       "read_only": false,
+       "annotations": [],
+       "type": {
+-       "type": "string"
++       "type": "string",
++       "choices": [
++        "BF_SPEED_10G",
++        "BF_SPEED_25G",
++        "BF_SPEED_100G"
++       ]
+       }
+      }
+     },
+diff --git a/tests/test_manager.py b/tests/test_manager.py
+index 6828290..228eebc 100644
+--- a/tests/test_manager.py
++++ b/tests/test_manager.py
+@@ -134,8 +134,24 @@ def test_filtered_read(manager):
+ 
+ 
+ def test_print_spec(manager, capsys):
+-    manager.print_table_entries_spec(LPM)
++    manager.print_table_entries_spec("ipv4_lpm")
+     out = capsys.readouterr().out
++    assert f"table-name: '{LPM}'" in out
+     assert "Ingress.forward" in out and "dst_mac" in out
++    assert "bytes, " not in out  # choices column no longer repeats the type
+     manager.print_table_entries_spec("$PORT")
+-    assert "$SPEED" in capsys.readouterr().out
++    out = capsys.readouterr().out
++    assert "$SPEED" in out and "BF_SPEED_25G" in out
++
++
++def test_choices(manager, client):
++    field = client.bfrt_get_action_data_field(manager.get_table("$PORT"), None, "$SPEED")
++    assert field["choices"] == "BF_SPEED_10G, BF_SPEED_25G, BF_SPEED_100G"
++    field = client.bfrt_get_action_data_field(manager.get_table(LPM), "Ingress.forward", "port")
++    assert field["choices"] == ""
++
++
++def test_unknown_table_suggests(manager):
++    with pytest.raises(BFRTException) as exc:
++        manager.get_table("ipv4_lmp")
++    assert "not found" in str(exc.value) and "pipe.Ingress.ipv4_lpm" in str(exc.value)
