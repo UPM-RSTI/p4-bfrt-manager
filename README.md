@@ -17,16 +17,33 @@ has no dependency on TeraFlowSDN and can be used on its own.
 
 ## Installation
 
+Install it in a virtual environment (required on Ubuntu 24.04+ / Debian 12+,
+where the system Python does not accept `pip install`):
+
+```bash
+python3 -m venv ~/venvs/bfrt
+source ~/venvs/bfrt/bin/activate
+pip install git+https://github.com/mgaflip/p4-bfrt-manager.git
+```
+
+To install a specific release, append the tag, e.g.
+`pip install git+https://github.com/mgaflip/p4-bfrt-manager.git@v0.1.0`.
+For development, clone the repository and install it in editable mode:
+
 ```bash
 git clone https://github.com/mgaflip/p4-bfrt-manager.git
 cd p4-bfrt-manager
-pip install .
+pip install -e ".[test]"
 ```
+
+Remember to activate the environment (`source ~/venvs/bfrt/bin/activate`) in
+each new shell, or run scripts directly with `~/venvs/bfrt/bin/python`.
 
 Requires Python ≥ 3.8. The BFRT gRPC client from Intel's
 [open-p4studio](https://github.com/p4lang/open-p4studio) is bundled (see
 [`src/bfrt_manager/bfrt_grpc`](src/bfrt_manager/bfrt_grpc/README.md)), so the SDE
-does **not** need to be installed on the machine running the library.
+does **not** need to be installed on the machine running the library, and it
+does not conflict with the SDE's own `bfrt_grpc` when both are present.
 
 ## Quick start
 
@@ -195,7 +212,7 @@ The library logs through the standard `logging` module (loggers under
 ## Tests
 
 ```bash
-pip install -e ".[test]"
+pip install -e ".[test]"   # inside the virtual environment
 pytest
 ```
 
