@@ -16,6 +16,8 @@ Intel Corporation, licensed under the Apache License 2.0.
   (`from . import bfruntime_pb2`) so the package can be vendored.
 - `info_parse.py`: `data_field_allowed_choices_get()` returns the allowed values
   of string/enum fields (e.g. `$SPEED`) instead of the field type.
+- `info_parse.py`: actions keep their `action_scope` from bf-rt.json, exposed
+  through the new `_TableInfo.action_scope_get()`.
 - `client.py`, `info_parse.py`: loggers renamed to `__name__` and no longer
   add handlers or force a log level at import time.
 

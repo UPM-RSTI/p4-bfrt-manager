@@ -154,6 +154,13 @@ class _TableInfo:
         """
         return self.action_dict[self.action_dict_allname[action_name]].annotations
 
+    def action_scope_get(self, action_name):
+        """@brief Get the scope of an action: "TableAndDefault", "TableOnly" or "DefaultOnly"
+            (local addition, not in upstream)
+        """
+        action = self.action_dict[self.action_dict_allname[action_name]]
+        return getattr(action, "scope", "TableAndDefault")
+
     def action_id_get(self, action_name):
         """@brief Get action ID from action name
             @param action_name action_name
@@ -818,6 +825,8 @@ class BfRtInfoParser:
         action_info = _ActionInfo(action_json["name"],
                             action_json["id"],
                             annotations)
+        # Keep the action scope (TableAndDefault / TableOnly / DefaultOnly)
+        action_info.scope = action_json.get("action_scope", "TableAndDefault")
         for data_json in action_json["data"]:
             BfRtInfoParser._parse_data_helper(action_info.data_dict, data_json)
         _create_allname_dict(action_info.data_dict_allname, action_info.data_dict)

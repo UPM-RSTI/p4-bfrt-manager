@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.1.2
+
+### Added
+- `set_annotations_from_json()`: apply the annotations of JSON entries without
+  writing them, so a new session reads IPs/MACs as strings.
+  `dump_entries.py -a FILE` uses it.
+- Action scope support: inserting an entry with a `@defaultonly` action (or
+  setting a `@tableonly` action as default) raises a clear `BFRTException`
+  instead of the switch's generic `INVALID_ARGUMENT`;
+  `print_table_entries_spec()` marks those actions.
+
+### Fixed
+- `examples/tna_counter_entries.json`: the second entry used
+  `SwitchIngress.nop`, which `tna_counter` only allows as default action.
+
+### Documentation
+- Annotations are per client session; `@defaultonly` actions.
+
 ## 0.1.1
 
 ### Changed

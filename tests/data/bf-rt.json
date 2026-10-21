@@ -67,6 +67,17 @@
      "action_scope": "TableAndDefault",
      "annotations": [],
      "data": []
+    },
+    {
+     "id": 12,
+     "name": "Ingress.miss",
+     "action_scope": "DefaultOnly",
+     "annotations": [
+      {
+       "name": "@defaultonly"
+      }
+     ],
+     "data": []
     }
    ],
    "data": [],

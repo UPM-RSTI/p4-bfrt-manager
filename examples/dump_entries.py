@@ -10,11 +10,17 @@ from bfrt_manager import BFRTManager
 p = parser(__doc__)
 p.add_argument("tables", nargs="*", help="tables to dump (default: all entry tables)")
 p.add_argument("-o", "--output", help="output file (default: stdout)")
+p.add_argument("-a", "--annotations", metavar="JSON_FILE",
+               help="take match/action annotations (ipv4, mac...) from this entries file, "
+                    "so addresses are printed as strings")
 args = p.parse_args()
 setup_logging(args)
 
 with BFRTManager(args.device_id, args.addr, args.port) as mgr:
     mgr.start(args.p4_path, args.p4_name)
+    if args.annotations:
+        with open(args.annotations) as f:
+            mgr.set_annotations_from_json(json.load(f))
     entries = []
     for table in args.tables or mgr.get_tables():
         entries.extend(mgr.get_table_entries(table))

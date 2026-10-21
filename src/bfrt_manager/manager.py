@@ -348,6 +348,35 @@ class BFRTManager:
         self.local_client.bfrt_set_data_list_annotations(
             self._resolve_table(table), action_name, annotations)
 
+    def set_annotations_from_json(self, json_resource):
+        """
+        Apply the "match-annotations" / "action-annotations" of JSON entries
+        without writing anything to the switch.
+
+        Annotations live in this client only (they are not stored on the
+        switch), so a new session that reads entries written by another one
+        returns plain integers. Call this first, e.g. with the same JSON file
+        used to write them, to get IPs and MACs back as strings.
+
+        :return: number of entries whose annotations were applied
+        """
+        json_obj = json.loads(json_resource) if isinstance(json_resource, str) else json_resource
+        entries = json_obj if isinstance(json_obj, list) else [json_obj]
+        count = 0
+        for ent in entries:
+            if not isinstance(ent, dict) or "table-name" not in ent:
+                continue
+            if not (ent.get("match-annotations") or ent.get("action-annotations")):
+                continue
+            table = self.get_table(ent["table-name"])
+            if ent.get("match-annotations"):
+                self.set_match_fields_annotations(table, ent["match-annotations"])
+            if ent.get("action-annotations"):
+                self.set_action_annotations(table, ent.get("action-name"),
+                                            ent["action-annotations"])
+            count += 1
+        return count
+
     ############################################################################
     # JSON operations
     ############################################################################
@@ -629,7 +658,10 @@ class BFRTManager:
             if action_name is not None and action_name != act:
                 continue
             if act is not None:
-                print(f"action-name: '{act}'")
+                scope = self.local_client.bfrt_get_action_scope(table, act)
+                note = {"DefaultOnly": " (default action only)",
+                        "TableOnly": " (entries only, not default)"}.get(scope, "")
+                print(f"action-name: '{act}'{note}")
             print_rows([self.local_client.bfrt_get_action_data_field(table, act, p)
                         for p in table.info.data_field_name_list_get(act)])
 

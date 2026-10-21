@@ -155,3 +155,33 @@ def test_unknown_table_suggests(manager):
     with pytest.raises(BFRTException) as exc:
         manager.get_table("ipv4_lmp")
     assert "not found" in str(exc.value) and "pipe.Ingress.ipv4_lpm" in str(exc.value)
+
+
+def test_defaultonly_action(manager, capsys):
+    entry = {k: v for k, v in ROUTE.items() if not k.startswith("action")}
+    entry["action-name"] = "Ingress.miss"
+    with pytest.raises(BFRTException) as exc:
+        manager.table_entry_insert_from_json(entry)
+    assert "set_default_entry" in str(exc.value)
+    manager.set_default_entry(LPM, "Ingress.miss")
+    assert manager.get_default_entry(LPM)["action-name"] == "Ingress.miss"
+    manager.print_table_entries_spec(LPM)
+    assert "'Ingress.miss' (default action only)" in capsys.readouterr().out
+
+
+def test_annotations_from_json_new_session(client):
+    from bfrt_manager import BFRTManager
+    writer = BFRTManager(0, "fake", 50052, client=client)
+    writer.table_entry_insert_from_json(ROUTE)
+    # A new session does not know the annotations: strip them from the
+    # client to simulate it, then restore them from the JSON file.
+    table = writer.get_table(LPM)
+    for f in table.info.key_dict.values():
+        f.annotations = [a for a in f.annotations if a.name != "$client_annotation"]
+    for a in table.info.action_dict.values():
+        for f in a.data_dict.values():
+            f.annotations = [x for x in f.annotations if x.name != "$client_annotation"]
+    [plain] = writer.get_table_entries(LPM)
+    assert isinstance(plain["match-fields"]["hdr.ipv4.dst_addr"]["value"], int)
+    assert writer.set_annotations_from_json([ROUTE, PORT0]) == 1
+    assert writer.get_table_entries(LPM) == [ROUTE]

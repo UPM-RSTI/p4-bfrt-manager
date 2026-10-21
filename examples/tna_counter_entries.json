@@ -10,6 +10,7 @@
     "table-name": "pipe.SwitchIngress.forward_exact",
     "match-fields": { "hdr.ethernet.src_addr": "00:00:00:00:00:02" },
     "match-annotations": { "hdr.ethernet.src_addr": "mac" },
-    "action-name": "SwitchIngress.nop"
+    "action-name": "SwitchIngress.hit_forward_exact",
+    "action-params": { "port": 8 }
   }
 ]

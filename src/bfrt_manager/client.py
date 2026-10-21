@@ -435,8 +435,44 @@ class BFRTRuntimeClient:
                 if f"{CLIENT_ANNOTATION}.{ann}" not in current:
                     table.info.data_field_annotation_add(par, action_name, ann)
 
+    @parse_bfrt_error
+    def bfrt_get_action_scope(self, table, action_name):
+        """Scope of an action: "TableAndDefault", "TableOnly" or "DefaultOnly"."""
+        if not action_name:
+            return "TableAndDefault"
+        info = table.info
+        if hasattr(info, "action_scope_get"):
+            scope = info.action_scope_get(action_name)
+            if scope != "TableAndDefault":
+                return scope
+        names = {a.name for a in info.action_annotations_get(action_name)}
+        if "@defaultonly" in names:
+            return "DefaultOnly"
+        if "@tableonly" in names:
+            return "TableOnly"
+        return "TableAndDefault"
+
+    def _check_action_scope(self, table, action_name, default):
+        if not action_name:
+            return
+        try:
+            scope = self.bfrt_get_action_scope(table, action_name)
+        except BFRTException:
+            return  # unknown action: let the switch report it
+        table_name = table.info.name_get()
+        if scope == "DefaultOnly" and not default:
+            raise BFRTException(
+                f"Action '{action_name}' of table {table_name} can only be the default "
+                f"action (@defaultonly): use set_default_entry() instead of an entry")
+        if scope == "TableOnly" and default:
+            raise BFRTException(
+                f"Action '{action_name}' of table {table_name} cannot be the default "
+                f"action (@tableonly)")
+
     def _write(self, op_name, method, table, key_dict, action_name=None,
                param_dict=None, with_data=True):
+        if with_data:
+            self._check_action_scope(table, action_name, default=False)
         try:
             key_list = [self.bfrt_build_key_list(table, key_dict)]
             if with_data:
@@ -477,6 +513,7 @@ class BFRTRuntimeClient:
 
     def bfrt_set_default_entry(self, table, action_name, param_dict):
         """Set the default action (and its parameters) of a table."""
+        self._check_action_scope(table, action_name, default=True)
         try:
             data = self.bfrt_build_data_list(table, action_name, param_dict or {})
             table.default_entry_set(self._target, data)

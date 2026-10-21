@@ -148,6 +148,14 @@ program is loaded on pipes 0–3 with profile `pipe`; use
 Values are integers by default. **Annotations** (`ipv4`, `ipv6`, `mac`,
 `bytes`) let a field be given and returned as a string such as `"10.0.0.1"` or
 `"00:10:94:00:00:01"`; several can be combined as `"ipv4,bytes"`.
+Annotations belong to the client session, not to the switch: a new session
+reading entries written by another one gets plain integers unless it applies
+the same annotations first, e.g. with `set_annotations_from_json(entries)` or
+`dump_entries.py -a entries.json`.
+
+Actions declared `@defaultonly` in P4 can only be used with
+`set_default_entry()`; `print_table_entries_spec()` marks them as
+*(default action only)*.
 
 `action-name` is omitted for fixed-function tables, whose data fields start
 with `$`:
@@ -178,6 +186,7 @@ unchanged to `table_entry_insert_from_json()`.
 | `delete_table_entries(table)` / `delete_tables()` | Clear one table / all entry tables |
 | `count_table_entries(table)` / `count_active_entries()` | Entry counts |
 | `set_default_entry(table, action, params)` / `reset_default_entry` / `get_default_entry` | Default (miss) action |
+| `set_annotations_from_json(entries)` | Apply the annotations of JSON entries without writing them |
 | `add_port(port, speed, fec, enable)` / `set_port_enabled` / `delete_port` | Port configuration (`$PORT`) |
 | `get_ports()` / `get_port_stats(ports, counters)` / `get_dev_port("1/0")` | Port state, counters and name lookup |
 | `add_multicast(mgid, ports)` / `delete_multicast(mgid)` | One-node multicast group |
@@ -205,9 +214,13 @@ the `tna_counter` example program shipped with the Tofino SDE:
 
 ```bash
 python apply_entries.py --addr <switch> insert tna_counter_entries.json
-python dump_entries.py  --addr <switch> forward_exact   # shows $COUNTER_SPEC_PKTS/BYTES
+python dump_entries.py  --addr <switch> -a tna_counter_entries.json forward_exact
 python apply_entries.py --addr <switch> delete tna_counter_entries.json
 ```
+
+The dump includes the direct counters of each entry (`$COUNTER_SPEC_PKTS`,
+`$COUNTER_SPEC_BYTES`); `-a` reuses the annotations of the JSON file so MAC
+addresses are shown as strings.
 
 Other table, action and field names in the examples (`pipe.Ingress.ipv4_lpm`,
 `Ingress.forward`, `my_prog`...) and in `examples/entries.json` are
