@@ -6,3 +6,8 @@ dist/
 .venv/
 .pytest_cache/
 *.log
+
+# Local artefacts
+*.patch
+zlog-cfg-cur
+*.log
