@@ -1,0 +1,19 @@
+[
+  {
+    "table-name": "$PORT",
+    "match-fields": { "$DEV_PORT": 4 },
+    "action-params": {
+      "$SPEED": "BF_SPEED_100G",
+      "$FEC": "BF_FEC_TYP_NONE",
+      "$PORT_ENABLE": true
+    }
+  },
+  {
+    "table-name": "pipe.Ingress.ipv4_lpm",
+    "match-fields": { "hdr.ipv4.dst_addr": { "value": "10.10.10.0", "prefix_len": 24 } },
+    "match-annotations": { "hdr.ipv4.dst_addr": "ipv4" },
+    "action-name": "Ingress.forward",
+    "action-params": { "port": 12, "dst_mac": "00:10:94:00:00:01" },
+    "action-annotations": { "dst_mac": "mac" }
+  }
+]

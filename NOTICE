@@ -1,0 +1,9 @@
+p4-bfrt-manager
+Copyright 2025-2026 RSTI - Universidad Politécnica de Madrid (UPM)
+
+This product includes software developed by Intel Corporation:
+  BF Runtime gRPC Python client and bfruntime.proto
+  (https://github.com/p4lang/open-p4studio)
+  Copyright (C) 2024 Intel Corporation
+  Licensed under the Apache License, Version 2.0
+  Located in src/bfrt_manager/bfrt_grpc/ (see the README.md there for local changes)

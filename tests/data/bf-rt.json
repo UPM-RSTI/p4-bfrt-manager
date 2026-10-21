@@ -1,0 +1,146 @@
+{
+ "schema_version": "1.0.0",
+ "tables": [
+  {
+   "name": "pipe.Ingress.ipv4_lpm",
+   "id": 1,
+   "table_type": "MatchAction_Direct",
+   "size": 1024,
+   "annotations": [],
+   "depends_on": [],
+   "has_const_default_action": false,
+   "key": [
+    {
+     "id": 1,
+     "name": "hdr.ipv4.dst_addr",
+     "repeated": false,
+     "annotations": [
+      {
+       "name": "isFieldSlice",
+       "value": "false"
+      }
+     ],
+     "mandatory": false,
+     "match_type": "LPM",
+     "type": {
+      "type": "bytes",
+      "width": 32
+     }
+    }
+   ],
+   "action_specs": [
+    {
+     "id": 10,
+     "name": "Ingress.forward",
+     "action_scope": "TableAndDefault",
+     "annotations": [],
+     "data": [
+      {
+       "id": 1,
+       "name": "port",
+       "repeated": false,
+       "mandatory": true,
+       "read_only": false,
+       "annotations": [],
+       "type": {
+        "type": "bytes",
+        "width": 9
+       }
+      },
+      {
+       "id": 2,
+       "name": "dst_mac",
+       "repeated": false,
+       "mandatory": true,
+       "read_only": false,
+       "annotations": [],
+       "type": {
+        "type": "bytes",
+        "width": 48
+       }
+      }
+     ]
+    },
+    {
+     "id": 11,
+     "name": "Ingress.drop",
+     "action_scope": "TableAndDefault",
+     "annotations": [],
+     "data": []
+    }
+   ],
+   "data": [],
+   "supported_operations": [],
+   "attributes": [
+    "EntryScope"
+   ]
+  },
+  {
+   "name": "pipe.Ingress.acl",
+   "id": 2,
+   "table_type": "MatchAction_Direct",
+   "size": 512,
+   "key": [
+    {
+     "id": 1,
+     "name": "ig_port",
+     "repeated": false,
+     "annotations": [],
+     "mandatory": false,
+     "match_type": "Exact",
+     "type": {
+      "type": "bytes",
+      "width": 9
+     }
+    },
+    {
+     "id": 2,
+     "name": "src_addr",
+     "repeated": false,
+     "annotations": [],
+     "mandatory": false,
+     "match_type": "Ternary",
+     "type": {
+      "type": "bytes",
+      "width": 32
+     }
+    },
+    {
+     "id": 3,
+     "name": "l4_port",
+     "repeated": false,
+     "annotations": [],
+     "mandatory": false,
+     "match_type": "Range",
+     "type": {
+      "type": "bytes",
+      "width": 16
+     }
+    },
+    {
+     "id": 4,
+     "name": "$MATCH_PRIORITY",
+     "repeated": false,
+     "annotations": [],
+     "mandatory": false,
+     "match_type": "Exact",
+     "type": {
+      "type": "uint32"
+     }
+    }
+   ],
+   "action_specs": [
+    {
+     "id": 11,
+     "name": "Ingress.drop",
+     "data": []
+    }
+   ],
+   "data": [],
+   "supported_operations": [],
+   "attributes": [
+    "EntryScope"
+   ]
+  }
+ ]
+}

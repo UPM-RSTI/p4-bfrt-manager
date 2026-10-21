@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "p4-bfrt-manager"
+version = "0.1.0"
+description = "Remote configuration of Intel Tofino switches through BF Runtime (BFRT) gRPC, using a simple JSON model for table entries"
+readme = "README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.8"
+authors = [{ name = "Manuel Álvarez-Campana", email = "manuel.alvarez-campana@upm.es" }]
+maintainers = [{ name = "RSTI - Universidad Politécnica de Madrid (UPM)" }]
+keywords = ["p4", "tofino", "bfrt", "bfruntime", "grpc", "sdn", "teraflowsdn"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Topic :: System :: Networking",
+]
+dependencies = [
+    "grpcio>=1.50",
+    "protobuf>=4.25",
+    "googleapis-common-protos>=1.56",
+    "six",
+    "tabulate",
+]
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[project.urls]
+Homepage = "https://github.com/rsti-upm/p4-bfrt-manager"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"bfrt_manager.bfrt_grpc" = ["bfruntime.proto", "README.md"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

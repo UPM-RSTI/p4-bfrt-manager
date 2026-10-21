@@ -1,0 +1,321 @@
+{
+ "schema_version": "1.0.0",
+ "tables": [
+  {
+   "name": "$PORT",
+   "id": 100,
+   "table_type": "PortConfigure",
+   "size": 512,
+   "key": [
+    {
+     "id": 1,
+     "name": "$DEV_PORT",
+     "repeated": false,
+     "annotations": [],
+     "mandatory": false,
+     "match_type": "Exact",
+     "type": {
+      "type": "uint32"
+     }
+    }
+   ],
+   "data": [
+    {
+     "mandatory": true,
+     "read_only": false,
+     "singleton": {
+      "id": 1,
+      "name": "$SPEED",
+      "repeated": false,
+      "mandatory": true,
+      "read_only": false,
+      "annotations": [],
+      "type": {
+       "type": "string"
+      }
+     }
+    },
+    {
+     "mandatory": true,
+     "read_only": false,
+     "singleton": {
+      "id": 2,
+      "name": "$FEC",
+      "repeated": false,
+      "mandatory": true,
+      "read_only": false,
+      "annotations": [],
+      "type": {
+       "type": "string"
+      }
+     }
+    },
+    {
+     "mandatory": false,
+     "read_only": false,
+     "singleton": {
+      "id": 3,
+      "name": "$PORT_ENABLE",
+      "repeated": false,
+      "mandatory": false,
+      "read_only": false,
+      "annotations": [],
+      "type": {
+       "type": "bool"
+      }
+     }
+    },
+    {
+     "mandatory": false,
+     "read_only": false,
+     "singleton": {
+      "id": 4,
+      "name": "$AUTO_NEGOTIATION",
+      "repeated": false,
+      "annotations": [],
+      "type": {
+       "type": "string"
+      }
+     }
+    }
+   ],
+   "supported_operations": [],
+   "attributes": []
+  },
+  {
+   "name": "$PORT_STAT",
+   "id": 101,
+   "table_type": "X",
+   "size": 512,
+   "key": [
+    {
+     "id": 1,
+     "name": "$DEV_PORT",
+     "repeated": false,
+     "annotations": [],
+     "mandatory": true,
+     "match_type": "Exact",
+     "type": {
+      "type": "uint32"
+     }
+    }
+   ],
+   "data": [
+    {
+     "mandatory": false,
+     "read_only": true,
+     "singleton": {
+      "id": 1,
+      "name": "$FramesReceivedOK",
+      "repeated": false,
+      "annotations": [],
+      "type": {
+       "type": "uint64"
+      }
+     }
+    },
+    {
+     "mandatory": false,
+     "read_only": true,
+     "singleton": {
+      "id": 2,
+      "name": "$FramesReceivedAll",
+      "repeated": false,
+      "annotations": [],
+      "type": {
+       "type": "uint64"
+      }
+     }
+    },
+    {
+     "mandatory": false,
+     "read_only": true,
+     "singleton": {
+      "id": 3,
+      "name": "$FramesTransmittedOK",
+      "repeated": false,
+      "annotations": [],
+      "type": {
+       "type": "uint64"
+      }
+     }
+    },
+    {
+     "mandatory": false,
+     "read_only": true,
+     "singleton": {
+      "id": 4,
+      "name": "$FramesTransmittedAll",
+      "repeated": false,
+      "annotations": [],
+      "type": {
+       "type": "uint64"
+      }
+     }
+    }
+   ],
+   "supported_operations": [],
+   "attributes": []
+  },
+  {
+   "name": "$PORT_STR_INFO",
+   "id": 102,
+   "table_type": "X",
+   "size": 512,
+   "key": [
+    {
+     "id": 1,
+     "name": "$PORT_NAME",
+     "repeated": false,
+     "annotations": [],
+     "mandatory": true,
+     "match_type": "Exact",
+     "type": {
+      "type": "string"
+     }
+    }
+   ],
+   "data": [
+    {
+     "mandatory": false,
+     "read_only": true,
+     "singleton": {
+      "id": 1,
+      "name": "$DEV_PORT",
+      "repeated": false,
+      "annotations": [],
+      "type": {
+       "type": "uint32"
+      }
+     }
+    }
+   ],
+   "supported_operations": [],
+   "attributes": []
+  },
+  {
+   "name": "$pre.node",
+   "id": 103,
+   "table_type": "X",
+   "size": 512,
+   "key": [
+    {
+     "id": 1,
+     "name": "$MULTICAST_NODE_ID",
+     "repeated": false,
+     "annotations": [],
+     "mandatory": true,
+     "match_type": "Exact",
+     "type": {
+      "type": "uint32"
+     }
+    }
+   ],
+   "data": [
+    {
+     "mandatory": true,
+     "read_only": false,
+     "singleton": {
+      "id": 1,
+      "name": "$MULTICAST_RID",
+      "repeated": false,
+      "annotations": [],
+      "type": {
+       "type": "uint16"
+      }
+     }
+    },
+    {
+     "mandatory": true,
+     "read_only": false,
+     "singleton": {
+      "id": 2,
+      "name": "$MULTICAST_LAG_ID",
+      "repeated": true,
+      "annotations": [],
+      "type": {
+       "type": "uint32"
+      }
+     }
+    },
+    {
+     "mandatory": true,
+     "read_only": false,
+     "singleton": {
+      "id": 3,
+      "name": "$DEV_PORT",
+      "repeated": true,
+      "annotations": [],
+      "type": {
+       "type": "uint32"
+      }
+     }
+    }
+   ],
+   "supported_operations": [],
+   "attributes": []
+  },
+  {
+   "name": "$pre.mgid",
+   "id": 104,
+   "table_type": "X",
+   "size": 512,
+   "key": [
+    {
+     "id": 1,
+     "name": "$MGID",
+     "repeated": false,
+     "annotations": [],
+     "mandatory": true,
+     "match_type": "Exact",
+     "type": {
+      "type": "uint32"
+     }
+    }
+   ],
+   "data": [
+    {
+     "mandatory": true,
+     "read_only": false,
+     "singleton": {
+      "id": 1,
+      "name": "$MULTICAST_NODE_ID",
+      "repeated": true,
+      "annotations": [],
+      "type": {
+       "type": "uint32"
+      }
+     }
+    },
+    {
+     "mandatory": true,
+     "read_only": false,
+     "singleton": {
+      "id": 2,
+      "name": "$MULTICAST_NODE_L1_XID_VALID",
+      "repeated": true,
+      "annotations": [],
+      "type": {
+       "type": "bool"
+      }
+     }
+    },
+    {
+     "mandatory": true,
+     "read_only": false,
+     "singleton": {
+      "id": 3,
+      "name": "$MULTICAST_NODE_L1_XID",
+      "repeated": true,
+      "annotations": [],
+      "type": {
+       "type": "uint16"
+      }
+     }
+    }
+   ],
+   "supported_operations": [],
+   "attributes": []
+  }
+ ]
+}
