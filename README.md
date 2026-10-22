@@ -9,6 +9,10 @@ Table entries use a plain JSON representation, so switch state can be dumped to
 a file, versioned and replayed. It works for P4 tables as well as for
 fixed-function tables such as `$PORT` or the multicast engine (`$pre.*`).
 
+To experiment without hardware, see
+[open-p4studio-vswitch](https://github.com/mgaflip/open-p4studio-vswitch), which runs
+virtual Tofino switches in Docker (see [Testing with virtual switches](#testing-with-virtual-switches)).
+
 Developed by the RSTI group at Universidad Politécnica de Madrid (UPM). The
 library is also used as the BFRT backend of the
 [TeraFlowSDN](https://tfs.etsi.org/) P4 driver and keeps that driver's resource
@@ -228,6 +232,29 @@ placeholders: run `show_tables.py` first to see the tables of the program
 loaded on your switch, then `show_tables.py --table <name>` for their fields.
 [`setup_switch.py`](examples/setup_switch.py) is a template for a full
 configuration script.
+
+## Testing with virtual switches
+
+No hardware is needed to try the library or develop scripts with it:
+[open-p4studio-vswitch](https://github.com/mgaflip/open-p4studio-vswitch) runs Tofino
+virtual switches (`tofino-model` + `bf_switchd`) in Docker containers, each one with
+its BF Runtime gRPC server on `<container IP>:50052`. They run `tna_counter` by
+default, so the example entries above can be applied right away:
+
+```bash
+# In a clone of open-p4studio-vswitch
+./start-vswitch-op4s-container.sh          # starts sw1
+./list-vswitch-op4s-containers.sh          # shows its gRPC address, e.g. 172.17.0.2:50052
+
+# In this repository's examples/
+python apply_entries.py --addr 172.17.0.2 insert tna_counter_entries.json
+python dump_entries.py  --addr 172.17.0.2 -a tna_counter_entries.json forward_exact
+```
+
+open-p4studio-vswitch can also connect switches to each other and to hosts, and
+includes complete scenarios (two switches routing between two hosts) whose
+configuration is written as JSON files in this library's format and applied with it.
+See its README for details.
 
 ## Logging
 
