@@ -252,6 +252,15 @@ python apply_entries.py --addr 172.17.0.2 insert tna_counter_entries.json
 python dump_entries.py  --addr 172.17.0.2 -a tna_counter_entries.json forward_exact
 ```
 
+Container addresses such as `172.17.0.2` are only reachable from the machine where the
+switches run, so run the library there. To use it from another machine, start the
+switch with its gRPC port published on the host (`-g 50052`) and connect to the host's
+address instead.
+
+`tna_counter_entries.json` forwards traffic to ports 4 and 8, while a switch has ports
+0 to 3 by default. The entries are written and read back either way; to also send
+traffic through those ports, start the switch with `--ports "4 8"`.
+
 vswitch-op4s can also connect switches to each other and to hosts, and includes
 complete scenarios (two switches routing between two hosts) whose configuration is
 written as JSON files in this library's format and applied with it. See its README
