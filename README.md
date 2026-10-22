@@ -10,7 +10,7 @@ a file, versioned and replayed. It works for P4 tables as well as for
 fixed-function tables such as `$PORT` or the multicast engine (`$pre.*`).
 
 To experiment without hardware, see
-[vswitch-op4s](https://github.com/mgaflip/vswitch-op4s), which runs
+[vswitch-op4s](https://github.com/UPM-RSTI/vswitch-op4s), which runs
 virtual Tofino switches in Docker (see [Testing with virtual switches](#testing-with-virtual-switches)).
 
 Developed by the RSTI group at Universidad Politécnica de Madrid (UPM). The
@@ -27,15 +27,15 @@ where the system Python does not accept `pip install`):
 ```bash
 python3 -m venv ~/venvs/bfrt
 source ~/venvs/bfrt/bin/activate
-pip install git+https://github.com/mgaflip/p4-bfrt-manager.git
+pip install git+https://github.com/UPM-RSTI/p4-bfrt-manager.git
 ```
 
 To install a specific release, append the tag, e.g.
-`pip install git+https://github.com/mgaflip/p4-bfrt-manager.git@v0.1.0`.
+`pip install git+https://github.com/UPM-RSTI/p4-bfrt-manager.git@v0.1.0`.
 For development, clone the repository and install it in editable mode:
 
 ```bash
-git clone https://github.com/mgaflip/p4-bfrt-manager.git
+git clone https://github.com/UPM-RSTI/p4-bfrt-manager.git
 cd p4-bfrt-manager
 pip install -e ".[test]"
 ```
@@ -236,14 +236,14 @@ configuration script.
 ## Testing with virtual switches
 
 No hardware is needed to try the library or develop scripts with it:
-[vswitch-op4s](https://github.com/mgaflip/vswitch-op4s) runs Tofino virtual switches
+[vswitch-op4s](https://github.com/UPM-RSTI/vswitch-op4s) runs Tofino virtual switches
 (`tofino-model` + `bf_switchd`) in Docker containers, each one with its BF Runtime gRPC
 server on `<container IP>:50052`. A prebuilt image is published as
-`ghcr.io/mgaflip/vswitch-op4s`, so there is nothing to compile. The switches run
+`ghcr.io/upm-rsti/vswitch-op4s`, so there is nothing to compile. The switches run
 `tna_counter` by default, so the example entries above can be applied right away:
 
 ```bash
-git clone https://github.com/mgaflip/vswitch-op4s.git && cd vswitch-op4s
+git clone https://github.com/UPM-RSTI/vswitch-op4s.git && cd vswitch-op4s
 ./start-vswitch-op4s-container.sh          # pulls the image and starts sw1
 ./list-vswitch-op4s-containers.sh          # shows its gRPC address, e.g. 172.17.0.2:50052
 

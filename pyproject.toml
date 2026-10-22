@@ -30,7 +30,7 @@ dependencies = [
 test = ["pytest"]
 
 [project.urls]
-Homepage = "https://github.com/mgaflip/p4-bfrt-manager"
+Homepage = "https://github.com/UPM-RSTI/p4-bfrt-manager"
 
 [tool.setuptools.packages.find]
 where = ["src"]
